@@ -7,7 +7,7 @@
 *.dll
 *.so
 *.dylib
-git-wt-go
+gwt
 
 # Test binary, built with `go test -c`
 *.test

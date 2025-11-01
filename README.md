@@ -1,4 +1,4 @@
-# git-wt-go
+# gwt
 Small git worktree wrapper to unify usage
 
 ## Motivation
@@ -11,7 +11,7 @@ The problem is that this workflow requires too many commands, or correctly filli
 Install the binary and Fish function:
 
 ```bash
-just install  # Installs git-wt-go to ~/.local/bin and gwt function to ~/.config/fish/functions
+just install  # Installs gwt to ~/.local/bin and gwt wrapper to ~/.config/fish/functions
 ```
 
 ## Usage
@@ -36,8 +36,8 @@ gwt rm <worktree-name>       # remove worktree
 # Create a new worktree for feature "parsing"
 gwt add parsing
 # Creates branch: wt/parsing
-# Creates directory: ../git-wt-go-parsing
-# Changes to: ../git-wt-go-parsing
+# Creates directory: ../gwt-parsing
+# Changes to: ../gwt-parsing
 
 # List all worktrees (shows short names)
 gwt list
@@ -61,7 +61,7 @@ gwt rm parsing
 Use `just` for common tasks:
 
 ```bash
-just build    # Build the git-wt-go binary
+just build    # Build the gwt binary
 just check    # Run formatting, linting, and tests
 just install  # Install to ~/.local/bin and Fish function
 just clean    # Remove build artifacts
