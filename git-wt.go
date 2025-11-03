@@ -133,35 +133,33 @@ func removeWorktree(repoRoot, repoName, wtName string) error {
 	if wtName == "" {
 		return errors.New("worktree name is required")
 	}
-	wtPath := filepath.Clean(filepath.Join(repoRoot, "..", fmt.Sprintf("%s-%s", repoName, wtName)))
+	repoDir := fmt.Sprintf("%s-%s", repoName, wtName)
+	wtPath := filepath.Clean(filepath.Join(repoRoot, "..", repoDir))
 	// check if exists
 	if _, err := os.Stat(wtPath); os.IsNotExist(err) {
 		return fmt.Errorf("worktree path does not exist: %s", wtPath)
 	}
-	// git worktree remove <path>
+
+	// Kill tmux session if it exists
+	fmt.Fprintf(os.Stderr, "Checking for tmux session: %s\n", repoDir)
+	cmd := exec.Command("tmux", "has-session", "-t", repoDir)
+	if err := cmd.Run(); err == nil {
+		// Session exists, kill it
+		fmt.Fprintf(os.Stderr, "Killing tmux session: %s\n", repoDir)
+		cmd = exec.Command("tmux", "kill-session", "-t", repoDir)
+		if err := cmd.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: failed to kill tmux session: %v\n", err)
+		}
+	}
+
+	// git worktree remove --force <path>
 	fmt.Fprintf(os.Stderr, "Removing worktree at %s\n", wtPath)
-	cmd := exec.Command("git", "worktree", "remove", wtPath)
+	cmd = exec.Command("git", "worktree", "remove", "--force", wtPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to remove worktree: %w", err)
 	}
-	return nil
-}
-
-func cdWorktree(repoRoot, repoName, wtName string) error {
-	if wtName == "" {
-		return errors.New("worktree name is required")
-	}
-	wtPath := filepath.Clean(filepath.Join(repoRoot, "..", fmt.Sprintf("%s-%s", repoName, wtName)))
-
-	// Check if worktree exists
-	if _, err := os.Stat(wtPath); os.IsNotExist(err) {
-		return fmt.Errorf("worktree does not exist: %s", wtPath)
-	}
-
-	// Output shell command to change directory
-	fmt.Printf("cd %q\n", wtPath)
 	return nil
 }
 
@@ -237,7 +235,7 @@ func printUsage() {
   gwt switch|sw <worktree-name> # switch to existing worktree
   gwt list                      # list all worktrees
   gwt remove|rm <worktree-name> # remove worktree at ../repo-worktree
-  gwt clean|cl                  # delete all wt/* branches after confirmation
+  gwt cleanup|cl                # delete all wt/* branches after confirmation
 `)
 }
 
@@ -268,8 +266,19 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error adding worktree: %v\n", err)
 			os.Exit(1)
 		}
-		// print the path (so a wrapper can 'cd' into it)
-		fmt.Println(path)
+		// Add to zoxide
+		cmd := exec.Command("zoxide", "add", path)
+		_ = cmd.Run() // non-fatal if zoxide fails
+
+		// Connect with sesh
+		cmd = exec.Command("sesh", "connect", wtName)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		if err := cmd.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "error connecting with sesh: %v\n", err)
+			os.Exit(1)
+		}
 	case "list":
 		if err := listWorktrees(); err != nil {
 			fmt.Fprintf(os.Stderr, "error listing worktrees: %v\n", err)
@@ -317,7 +326,19 @@ func main() {
 				os.Exit(1)
 			}
 		}
-		fmt.Println(wtPath)
+		// Add to zoxide
+		cmd := exec.Command("zoxide", "add", wtPath)
+		_ = cmd.Run() // non-fatal if zoxide fails
+
+		// Connect with sesh
+		cmd = exec.Command("sesh", "connect", wtPath)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		if err := cmd.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "error connecting with sesh: %v\n", err)
+			os.Exit(1)
+		}
 	case "rm", "remove":
 		if len(os.Args) < 3 {
 			fmt.Fprintln(os.Stderr, "rm requires a worktree name")
