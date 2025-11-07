@@ -23,11 +23,13 @@ just install  # Installs gwt to ~/bin
 ## Usage
 
 ```bash
-gwt add <worktree-name>      # create new worktree and attach to tmux session
-gwt sw <worktree-name>       # switch to existing worktree in tmux session
-gwt list                     # list all worktrees  
-gwt rm <worktree-name>       # remove worktree (kills tmux session if exists)
-gwt cleanup                  # delete all wt/* branches after confirmation
+$ gwt -h
+Usage:
+  gwt add <worktree-name>       # create new worktree and cd into it
+  gwt switch|sw <worktree-name> # switch to existing worktree
+  gwt list|ls                   # list all worktrees
+  gwt remove|rm <worktree-name> # remove worktree at ../repo-worktree
+  gwt cleanup|cl                # delete dangling wt/* branches after confirmation
 ```
 
 ### How it works
@@ -76,8 +78,13 @@ gwt cleanup
 Use `just` for common tasks:
 
 ```bash
-just build    # Build the gwt binary
-just check    # Run formatting, linting, and tests
-just install  # Install to ~/bin
-just clean    # Remove build artifacts
+$ just help
+Available recipes:
+    build   # Build the gwt binary
+    check   # Run all checks
+    clean   # Clean build artifacts
+    help    # Show available commands
+    install # Install gwt to ~/bin along with fish autocomplete
+    lint    # Run linters
+    test    # Run tests
 ```

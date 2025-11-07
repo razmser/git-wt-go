@@ -277,7 +277,7 @@ func printUsage() {
 	fmt.Printf(`Usage:
   gwt add <worktree-name>       # create new worktree and cd into it
   gwt switch|sw <worktree-name> # switch to existing worktree
-  gwt list                      # list all worktrees
+  gwt list|ls                   # list all worktrees
   gwt remove|rm <worktree-name> # remove worktree at ../repo-worktree
   gwt cleanup|cl                # delete dangling wt/* branches after confirmation
 `)
@@ -323,7 +323,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error connecting with sesh: %v\n", err)
 			os.Exit(1)
 		}
-	case "list":
+	case "ls", "list":
 		if err := listWorktrees(); err != nil {
 			fmt.Fprintf(os.Stderr, "error listing worktrees: %v\n", err)
 			os.Exit(1)
